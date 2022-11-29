@@ -1,5 +1,5 @@
 name: Merge to integration
-on: [pull_request_review_comment, pull_request]
+on: [pull_request_review_comment]
 
 jobs:
   merge-branch:
