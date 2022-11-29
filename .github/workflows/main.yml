@@ -5,10 +5,10 @@ jobs:
   merge-branch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@master
 
       - name: Merge to integration
-        uses: devmasx/merge-branch@main
+        uses: devmasx/merge-branch@master
         with:
           type: now
           target_branch: staging
