@@ -1,17 +1,15 @@
 name: Merge to integration
 
-on:
-  pull_request_review_comment:
-    types: [created]
+on: [pull_request_review_comment]
 
 jobs:
   merge-branch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@main
 
       - name: Merge to integration
-        uses: devmasx/merge-branch@master
+        uses: devmasx/merge-branch@main
         with:
           type: now
           target_branch: staging
