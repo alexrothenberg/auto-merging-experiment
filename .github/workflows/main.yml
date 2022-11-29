@@ -4,7 +4,6 @@ on:
   pull_request_review_comment:
     types: [created]
 
-
 jobs:
   merge-branch:
     runs-on: ubuntu-latest
