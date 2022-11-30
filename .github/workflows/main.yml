@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@master
         if: steps.check.outputs.triggered == 'true'
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.head_ref }}
 
       - name: Merge to integration
         if: steps.check.outputs.triggered == 'true'
