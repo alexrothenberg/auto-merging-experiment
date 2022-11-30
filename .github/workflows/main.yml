@@ -16,7 +16,7 @@ jobs:
         id: check
         with:
           trigger: 'deploy to integration/'
-          reaction: rocket
+          reaction: eyes
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
