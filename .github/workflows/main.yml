@@ -45,7 +45,7 @@ jobs:
       - uses: khan/pull-request-comment-trigger@v1.1.0
         id: check
         with:
-          trigger: '@deploy'
+          trigger: 'deploy to integration/'
           reaction: '+1'
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
