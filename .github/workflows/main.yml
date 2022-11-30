@@ -8,19 +8,21 @@ jobs:
     if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-        with:
-          ref: ${{ github.ref }}
-
       - uses: khan/pull-request-comment-trigger@v1.1.0
         id: check
         with:
           trigger: 'deploy to integration/'
-          reaction: rocket
+          reaction: eyes
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
+      - uses: actions/checkout@master
+        if: steps.check.outputs.triggered == 'true'
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Merge to integration
+        if: steps.check.outputs.triggered == 'true'
         uses: devmasx/merge-branch@master
         with:
           type: now
@@ -28,6 +30,7 @@ jobs:
           github_token: ${{ github.token }}
 
       - uses: khan/pull-request-comment-trigger@v1.1.0
+        if: steps.check.outputs.triggered == 'true'
         id: check2
         with:
           trigger: 'deploy to integration/'
