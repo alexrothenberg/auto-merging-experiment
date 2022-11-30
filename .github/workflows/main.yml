@@ -1,19 +1,32 @@
 name: Merge to integration
-
-on:
-  pull_request_review_comment:
-    types: [created]
-
+on: issue_comment
 
 jobs:
-  merge-branch:
+  pr_commented:
+    # This job only runs for pull request comments
+    name: PR comment
+    if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - run: |
+          echo A comment on PR $NUMBER
+        env:
+          NUMBER: ${{ github.event.issue.number }}
 
-      - name: Merge to integration
-        uses: devmasx/merge-branch@master
-        with:
-          type: now
-          target_branch: staging
-          github_token: ${{ github.token }}
+# on:
+#   issue_comment:
+#     types: [created]
+
+# jobs:
+#   merge-branch:
+#     if: ${{ github.event.issue.pull_request }}
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@master
+
+#       - name: Merge to integration
+#         uses: devmasx/merge-branch@master
+#         with:
+#           type: now
+#           target_branch: staging
+#           github_token: ${{ github.token }}
