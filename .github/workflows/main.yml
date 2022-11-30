@@ -28,7 +28,7 @@ jobs:
           github_token: ${{ github.token }}
 
       - uses: khan/pull-request-comment-trigger@v1.1.0
-        id: check
+        id: check2
         with:
           trigger: 'deploy to integration/'
           reaction: '+1'
