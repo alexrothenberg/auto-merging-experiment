@@ -14,20 +14,39 @@ jobs:
           NUMBER: ${{ github.event.issue.number }}
 
 
-# on:
-#   issue_comment:
-#     types: [created]
+on:
+  issue_comment:
+    types: [created]
 
-# jobs:
-#   merge-branch:
-#     if: ${{ github.event.issue.pull_request }}
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@master
+jobs:
+  merge-branch:
+    if: ${{ github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+        with:
+          ref: ${{ github.ref }}
 
-#       - name: Merge to integration
-#         uses: devmasx/merge-branch@master
-#         with:
-#           type: now
-#           target_branch: staging
-#           github_token: ${{ github.token }}
+      - uses: khan/pull-request-comment-trigger@v1.1.0
+        id: check
+        with:
+          trigger: '@deploy'
+          reaction: rocket
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+
+      - name: Merge to integration
+        uses: devmasx/merge-branch@master
+        with:
+          type: now
+          target_branch: staging
+          github_token: ${{ github.token }}
+
+      - uses: khan/pull-request-comment-trigger@v1.1.0
+        id: check
+        with:
+          trigger: '@deploy'
+          reaction: '+1'
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+
