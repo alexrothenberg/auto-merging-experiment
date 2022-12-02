@@ -23,7 +23,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            console.log(steps.triggered.outputs.result, (steps.triggered.outputs.result != ""))
+            console.log(${{ steps.triggered.outputs.result }}, (${{ steps.triggered.outputs.result }} != ""))
             try {
               return await github.rest.reactions.createForIssueComment({
                 owner: context.repo.owner,
