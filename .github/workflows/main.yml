@@ -17,7 +17,7 @@ jobs:
             const match = context.payload.comment.body.matches(pattern)
             return match && match[1]
 
-      - name: "We're starting, leave reaction on the comment"
+      - name: "We're starting, leave 👀 reaction on the comment"
         if: steps.triggered.outputs.result
         uses: actions/github-script@v6
         with:
@@ -32,7 +32,6 @@ jobs:
             } catch (err) {
               core.setFailed(`Request failed with error ${err}`)
             }
-        });
 
       - name: "get the base_ref of the branch in the pr" # this is part of the pull_request event but is not in the issue_comment :(
         if: steps.triggered.outputs.result
@@ -73,7 +72,7 @@ jobs:
               core.setFailed(`Request failed with error ${err}`)
             }
 
-      - name: "All done, leave reaction on the comment"
+      - name: "All done, leave 👍 reaction on the comment"
         if: steps.triggered.outputs.result
         uses: actions/github-script@v6
         with:
