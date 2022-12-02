@@ -72,12 +72,9 @@ jobs:
             try {
               await github.rest.repos.merge(request);
               return { success: true }
-              # responseBody = `I've merged this branch into ${request.base}`
             } catch (err) {
               core.setFailed(`Unable to merge automatically, error ${err}`)
               return { success: false, message: err.message }
-
-              # responseBody = `Unable to automatically merge into ${{ steps.triggered.outputs.result }} because of a merge conflict. You're going to have to merge by hand this time.`
             }
 
       - name: "Leave status comment"
