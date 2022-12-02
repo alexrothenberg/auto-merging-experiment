@@ -81,7 +81,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const mergeStatus = JSON.parse(${{ steps.merge-branch.outputs.result }})
+            const mergeStatus = ${{ steps.merge-branch.outputs.result }}
             let body;
             if (mergeStatus.success) {
               body = `I've merged your changes into ${{ steps.pr-ref.outputs.result }}. They should be deployed by circle-ci shortly.`
