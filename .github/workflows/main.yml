@@ -13,6 +13,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+          console.log({context})
             const pattern = /deploy to integration\/(.*)/
             const match = context.payload.comment.body.match(pattern)
             console.log(match, (match && match[1]))
@@ -69,9 +70,26 @@ jobs:
               const result = await github.rest.repos.merge(request);
               return result.data
             } catch (err) {
-              console.log({err}, err.message)
-              console.log("TODO: leave a comment on the PR that we failed")
-              core.setFailed(`Request failed with error ${err}`)
+              if (err.message == "Merge conflict") {
+                try {
+                  const body = `Unable to automatically merge into ${{ steps.triggered.outputs.result }} because of a merge conflict. You're going to have to merge by hand this time.`
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    comment_id: context.payload.issue.id,
+                    body
+                  });
+                  return await github.rest.reactions.createForIssueComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    comment_id: context.payload.comment.id,
+                    content: "-1"
+                  })
+                } catch (err) {
+                  core.setFailed(`Request failed with error ${err}`)
+                }
+              }
+              core.setFailed(`Unable to merge automatically, error ${err}`)
             }
 
       - name: "All done, leave 👍 reaction on the comment"
