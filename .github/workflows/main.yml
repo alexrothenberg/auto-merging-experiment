@@ -71,9 +71,9 @@ jobs:
               const result = await github.rest.repos.merge(request);
               return result.data
             } catch (err) {
+              core.setFailed(`Unable to merge automatically, error ${err}`)
               if (err.message == "Merge conflict") {
                 try {
-                  console.log({issue: context.payload.issue})
                   const body = `Unable to automatically merge into ${{ steps.triggered.outputs.result }} because of a merge conflict. You're going to have to merge by hand this time.`
                   console.log("create comment", {
                     owner: context.repo.owner,
@@ -98,7 +98,6 @@ jobs:
                   core.setFailed(`Request failed with error ${err}`)
                 }
               }
-              core.setFailed(`Unable to merge automatically, error ${err}`)
             }
 
       - name: "All done, leave 👍 reaction on the comment"
