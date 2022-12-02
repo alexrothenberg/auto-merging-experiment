@@ -55,21 +55,9 @@ jobs:
               console.log("TODO: leave a comment on the PR that we failed")
               core.setFailed(`Request failed with error ${err}`)
             }
-      # - uses: actions/checkout@master
-      #   if: steps.check.outputs.triggered == 'true'
-      #   with:
-      #     ref: ${{ steps.get-pr.outputs.result }}
 
-      # - name: Merge to integration
-      #   if: steps.check.outputs.triggered == 'true'
-      #   uses: devmasx/merge-branch@master
-      #   with:
-      #     type: now
-      #     source_ref: ${{ steps.get-pr.outputs.result }}
-      #     target_branch: staging
-      #     github_token: ${{ github.token }}
-
-      - uses: khan/pull-request-comment-trigger@v1.1.0
+      - name: "Success! leave an emoji on the PR"
+        uses: khan/pull-request-comment-trigger@v1.1.0
         with:
           trigger: 'deploy to integration/'
           reaction: '+1'
