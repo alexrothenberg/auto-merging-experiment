@@ -15,6 +15,7 @@ jobs:
           script: |
             const pattern = /deploy to integration\/(.*)/
             const match = context.payload.comment.body.match(pattern)
+            console.log(match, (match && match[1]))
             return match && match[1]
 
       - name: "We're starting, leave 👀 reaction on the comment"
