@@ -68,7 +68,7 @@ jobs:
               base: steps.triggered.outputs.result,
               head: ${{ steps.pr-ref.outputs.result }},
             }
-            core.info(`Merging branch ${{ steps.pr-ref.outputs.result }} into "staging"`)
+            core.info(`Merging branch ${{ steps.pr-ref.outputs.result }} into ${{ steps.triggered.outputs.result }}`)
             try {
               await github.rest.repos.merge(request);
               return { success: true }
