@@ -15,15 +15,16 @@ jobs:
           script: |
             const pattern = /deploy to integration\/(.*)/
             const match = context.payload.comment.body.match(pattern)
-            console.log(match, (match && match[1]))
-            return match && match[1]
+            if (match) {
+              return match[1]
+            }
 
       - name: "We're starting, leave 👀 reaction on the comment"
         if: steps.triggered.outputs.result
         uses: actions/github-script@v6
         with:
           script: |
-            console.log(${{ steps.triggered.outputs.result }}, (${{ steps.triggered.outputs.result }} != ""))
+            console.log(${{ steps.triggered.outputs.result }}, (${{ steps.triggered.outputs.result }} != null))
             try {
               return await github.rest.reactions.createForIssueComment({
                 owner: context.repo.owner,
