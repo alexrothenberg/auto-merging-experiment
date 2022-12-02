@@ -15,6 +15,7 @@ jobs:
           script: |
             const pattern = /deploy to integration\/(.*)/
             const body = context.payload.comment.body
+            console.log({body})
             const match = body.matches(pattern)
             return match && match[1]
 
