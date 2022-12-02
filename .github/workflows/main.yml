@@ -1,18 +1,105 @@
 name: Merge to integration
-
 on:
-  pull_request_review_comment:
+  issue_comment:
     types: [created]
 
 jobs:
   merge-branch:
+    if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-
-      - name: Merge to integration
-        uses: devmasx/merge-branch@master
+      - name: "get target"
+        id: triggered
+        uses: actions/github-script@v6
         with:
-          type: now
-          target_branch: staging
-          github_token: ${{ github.token }}
+          script: |
+            const pattern = /deploy to (integration\/.*)/
+            const match = context.payload.comment.body.match(pattern)
+            if (match) {
+              return match[1]
+            }
+
+      - name: "We're starting, leave 👀 reaction on the comment"
+        if: steps.triggered.outputs.result
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log(${{ steps.triggered.outputs.result }}, (${{ steps.triggered.outputs.result }} != null))
+            try {
+              return await github.rest.reactions.createForIssueComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: context.payload.comment.id,
+                content: "eyes"
+              })
+            } catch (err) {
+              core.setFailed(`Failed to post 👀 on this comment because of error ${err}`)
+            }
+
+      - name: "get the base_ref of the branch in the pr" # this is part of the pull_request event but is not in the issue_comment :(
+        if: steps.triggered.outputs.result
+        uses: actions/github-script@v6
+        id: pr-ref
+        with:
+          script: |
+            const request = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            }
+            core.info(`Getting PR #${request.pull_number} from ${request.owner}/${request.repo}`)
+            try {
+              const result = await github.rest.pulls.get(request)
+              return result.data.head.ref
+            } catch (err) {
+              core.setFailed(`Failed to get the branch becuase of error ${err}`)
+            }
+
+      - name: "Merge branch into target"
+        if: steps.triggered.outputs.result
+        uses: actions/github-script@v6
+        id: merge-branch
+        with:
+          script: |
+            let responseBody = "";
+            const request = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              base: steps.triggered.outputs.result,
+              head: ${{ steps.pr-ref.outputs.result }},
+            }
+            core.info(`Merging branch ${{ steps.pr-ref.outputs.result }} into "staging"`)
+            try {
+              await github.rest.repos.merge(request);
+              return { success: true }
+              # responseBody = `I've merged this branch into ${request.base}`
+            } catch (err) {
+              core.setFailed(`Unable to merge automatically, error ${err}`)
+              return { success: false, message: err.message }
+
+              # responseBody = `Unable to automatically merge into ${{ steps.triggered.outputs.result }} because of a merge conflict. You're going to have to merge by hand this time.`
+            }
+
+      - name: "Leave status comment"
+        if: steps.triggered.outputs.result
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const mergeStatus = JSON.parse(${{ steps.merge-branch.outputs.result }})
+            let body;
+            if (mergeStatus.success) {
+              body = "I've merged your changes into ${{ steps.pr-ref.outputs.result }}. They should be deployed by circle-ci shortly."
+            } else {
+              body = `Oh noes! I was unable to automatically merge your changes into ${{ steps.triggered.outputs.result }} because of a ${mergeStatus.message}. You're going to have to merge by hand this time.`
+            }
+
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                body
+              });
+            } catch (err) {
+              core.setFailed(`Unable to respond with a comment because of error ${err}`)
+            }
