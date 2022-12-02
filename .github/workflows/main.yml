@@ -8,15 +8,34 @@ jobs:
     if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
-      - name: "Ensure comment text should trigger a merge"
-        uses: khan/pull-request-comment-trigger@v1.1.0
+      - name: "get target"
+        id: triggered
+        uses: actions/github-script@v6
         with:
-          trigger: 'deploy to integration/'
-          reaction: eyes
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          script: |
+            const pattern = /deploy to integration\/(.*)/
+            const match = context.payload.comment.body.matches(pattern)
+            return match && match[1]
+
+      - name: "We're starting, leave 👀 reaction on the comment"
+        if: steps.triggered.outputs.result
+        uses: actions/github-script@v6
+        with:
+          script: |
+            try {
+              return await github.rest.reactions.createForIssueComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: context.payload.comment.id,
+                content: "eyes"
+              })
+            } catch (err) {
+              core.setFailed(`Request failed with error ${err}`)
+            }
+        });
 
       - name: "get the base_ref of the branch in the pr" # this is part of the pull_request event but is not in the issue_comment :(
+        if: steps.triggered.outputs.result
         uses: actions/github-script@v6
         id: pr-ref
         with:
@@ -34,10 +53,8 @@ jobs:
               core.setFailed(`Request failed with error ${err}`)
             }
 
-      - name: "Say Hello Mona it's Monday"
-        run: echo "${{ steps.pr-ref.outputs.result }}"
-
       - name: "Merge branch into staging"
+        if: steps.triggered.outputs.result
         uses: actions/github-script@v6
         with:
           script: |
@@ -56,11 +73,19 @@ jobs:
               core.setFailed(`Request failed with error ${err}`)
             }
 
-      - name: "Success! leave an emoji on the PR"
-        uses: khan/pull-request-comment-trigger@v1.1.0
+      - name: "All done, leave 👍 reaction on the comment"
+        if: steps.triggered.outputs.result
+        uses: actions/github-script@v6
         with:
-          trigger: 'deploy to integration/'
-          reaction: '+1'
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-
+          script: |
+            try {
+              return await github.rest.reactions.createForIssueComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: context.payload.comment.id,
+                content: "+1"
+              })
+            } catch (err) {
+              core.setFailed(`Request failed with error ${err}`)
+            }
+        });
