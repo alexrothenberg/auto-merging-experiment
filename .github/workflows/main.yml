@@ -78,13 +78,13 @@ jobs:
                   console.log("create comment", {
                     owner: context.repo.owner,
                     repo: context.repo.repo,
-                    issue_number: context.payload.issue.id,
+                    issue_number: context.payload.issue.number,
                     body
                   })
                   await github.rest.issues.createComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
-                    issue_number: context.payload.issue.id,
+                    issue_number: context.payload.issue.number,
                     body
                   });
                   console.log("create for issue comment")
