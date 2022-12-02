@@ -86,7 +86,7 @@ jobs:
               body = `I've merged your changes into ${{ steps.pr-ref.outputs.result }}. They should be deployed by circle-ci shortly.`
             } else {
               body = `Oh noes! I was unable to automatically merge your changes into ${{ steps.triggered.outputs.result }} because of a ${mergeStatus.message}. You're going to have to merge by hand this time.`
-              core.setFailed(`Unable to merge automatically, error ${err}`)
+              core.setFailed(`Unable to merge automatically, error ${mergeStatus.message}`)
             }
 
             try {
