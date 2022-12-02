@@ -73,13 +73,21 @@ jobs:
             } catch (err) {
               if (err.message == "Merge conflict") {
                 try {
+                  console.log({issue: context.payload.issue})
                   const body = `Unable to automatically merge into ${{ steps.triggered.outputs.result }} because of a merge conflict. You're going to have to merge by hand this time.`
+                  console.log("create comment", {
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.payload.issue.id,
+                    body
+                  })
                   await github.rest.issues.createComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
-                    comment_id: context.payload.issue.id,
+                    issue_number: context.payload.issue.id,
                     body
                   });
+                  console.log("create for issue comment")
                   return await github.rest.reactions.createForIssueComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
