@@ -13,7 +13,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-          console.log({context})
+            console.log({context})
             const pattern = /deploy to integration\/(.*)/
             const match = context.payload.comment.body.match(pattern)
             console.log(match, (match && match[1]))
