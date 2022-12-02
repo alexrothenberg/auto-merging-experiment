@@ -19,7 +19,7 @@ jobs:
             return match && match[1]
 
       - name: "We're starting, leave 👀 reaction on the comment"
-        if: steps.triggered.outputs.result
+        if: steps.triggered.outputs.result != null
         uses: actions/github-script@v6
         with:
           script: |
@@ -35,7 +35,7 @@ jobs:
             }
 
       - name: "get the base_ref of the branch in the pr" # this is part of the pull_request event but is not in the issue_comment :(
-        if: steps.triggered.outputs.result
+        if: steps.triggered.outputs.result != null
         uses: actions/github-script@v6
         id: pr-ref
         with:
@@ -54,7 +54,7 @@ jobs:
             }
 
       - name: "Merge branch into staging"
-        if: steps.triggered.outputs.result
+        if: steps.triggered.outputs.result != null
         uses: actions/github-script@v6
         with:
           script: |
@@ -69,13 +69,13 @@ jobs:
               const result = await github.rest.repos.merge(request);
               return result.data
             } catch (err) {
-              console.log({err})
+              console.log({err}, err.message)
               console.log("TODO: leave a comment on the PR that we failed")
               core.setFailed(`Request failed with error ${err}`)
             }
 
       - name: "All done, leave 👍 reaction on the comment"
-        if: steps.triggered.outputs.result
+        if: steps.triggered.outputs.result != null
         uses: actions/github-script@v6
         with:
           script: |
