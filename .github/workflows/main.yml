@@ -8,30 +8,68 @@ jobs:
     if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
-      - uses: khan/pull-request-comment-trigger@v1.1.0
-        id: check
+      - name: "Ensure comment text should trigger a merge"
+        uses: khan/pull-request-comment-trigger@v1.1.0
         with:
           trigger: 'deploy to integration/'
           reaction: eyes
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
-      - uses: actions/checkout@master
-        if: steps.check.outputs.triggered == 'true'
+      - name: "get the base_ref of the branch in the pr" # this is part of the pull_request event but is not in the issue_comment :(
+        uses: actions/github-script@v6
+        id: pr-ref
         with:
-          ref: ${{ github.head_ref }}
+          script: |
+            const request = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            }
+            core.info(`Getting PR #${request.pull_number} from ${request.owner}/${request.repo}`)
+            try {
+              const result = await github.rest.pulls.get(request)
+              return result.data.head.ref
+            } catch (err) {
+              core.setFailed(`Request failed with error ${err}`)
+            }
 
-      - name: Merge to integration
-        if: steps.check.outputs.triggered == 'true'
-        uses: devmasx/merge-branch@master
+      - name: "Say Hello Mona it's Monday"
+        run: echo "${{ steps.pr-ref.outputs.result }}"
+
+      - name: "Merge branch into staging"
+        uses: actions/github-script@v6
         with:
-          type: now
-          target_branch: staging
-          github_token: ${{ github.token }}
+          script: |
+            const request = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              base: "staging",
+              head: ${{ steps.pr-ref.outputs.result }},
+            }
+            core.info(`Merging branch ${{ steps.pr-ref.outputs.result }} into "staging"`)
+            try {
+              const result = await github.rest.repos.merge(request);
+              return result.data
+            } catch (err) {
+              console.log("TODO: leave a comment on the PR that we failed")
+              core.setFailed(`Request failed with error ${err}`)
+            }
+      # - uses: actions/checkout@master
+      #   if: steps.check.outputs.triggered == 'true'
+      #   with:
+      #     ref: ${{ steps.get-pr.outputs.result }}
+
+      # - name: Merge to integration
+      #   if: steps.check.outputs.triggered == 'true'
+      #   uses: devmasx/merge-branch@master
+      #   with:
+      #     type: now
+      #     source_ref: ${{ steps.get-pr.outputs.result }}
+      #     target_branch: staging
+      #     github_token: ${{ github.token }}
 
       - uses: khan/pull-request-comment-trigger@v1.1.0
-        if: steps.check.outputs.triggered == 'true'
-        id: check2
         with:
           trigger: 'deploy to integration/'
           reaction: '+1'
