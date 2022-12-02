@@ -13,17 +13,17 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            console.log({context})
             const pattern = /deploy to integration\/(.*)/
             const match = context.payload.comment.body.match(pattern)
             console.log(match, (match && match[1]))
             return match && match[1]
 
       - name: "We're starting, leave 👀 reaction on the comment"
-        if: steps.triggered.outputs.result != null
+        if: steps.triggered.outputs.result != ""
         uses: actions/github-script@v6
         with:
           script: |
+            console.log(steps.triggered.outputs.result, (steps.triggered.outputs.result != ""))
             try {
               return await github.rest.reactions.createForIssueComment({
                 owner: context.repo.owner,
@@ -36,7 +36,7 @@ jobs:
             }
 
       - name: "get the base_ref of the branch in the pr" # this is part of the pull_request event but is not in the issue_comment :(
-        if: steps.triggered.outputs.result != null
+        if: steps.triggered.outputs.result != ""
         uses: actions/github-script@v6
         id: pr-ref
         with:
@@ -55,7 +55,7 @@ jobs:
             }
 
       - name: "Merge branch into staging"
-        if: steps.triggered.outputs.result != null
+        if: steps.triggered.outputs.result != ""
         uses: actions/github-script@v6
         with:
           script: |
@@ -93,7 +93,7 @@ jobs:
             }
 
       - name: "All done, leave 👍 reaction on the comment"
-        if: steps.triggered.outputs.result != null
+        if: steps.triggered.outputs.result != ""
         uses: actions/github-script@v6
         with:
           script: |
