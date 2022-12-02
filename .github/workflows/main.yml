@@ -69,6 +69,7 @@ jobs:
               const result = await github.rest.repos.merge(request);
               return result.data
             } catch (err) {
+              console.log({err})
               console.log("TODO: leave a comment on the PR that we failed")
               core.setFailed(`Request failed with error ${err}`)
             }
